@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+      "allowJs": true,
+      "experimentalDecorators": true,
+      "outDir": "./built",
+      "resolveJsonModule": true,
+      "target": "es5",
+  },
+  "include": [
+      "./src/**/*"
+  ]
+}
