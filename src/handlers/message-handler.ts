@@ -5,7 +5,7 @@ import { TalkHandler } from "./talk-handler";
 import { TYPES } from "../types";
 
 @injectable()
-export class MessageHandler implements MessageHandler {
+export class MessageHandler {
   constructor(
     @inject(TYPES.TalkHandler) private talkHandler: TalkHandler,
   ) { }

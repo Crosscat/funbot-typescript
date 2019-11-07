@@ -3,7 +3,7 @@ import { inject, injectable } from "inversify";
 import { TYPES } from "../types";
 
 @injectable()
-export class TalkHandler implements TalkHandler {
+export class TalkHandler {
   constructor (
     @inject(TYPES.DatabaseHandler) private database: DatabaseHandler,
   ) { 
