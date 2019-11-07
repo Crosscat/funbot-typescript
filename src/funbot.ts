@@ -1,21 +1,23 @@
 import 'dotenv/config';
 
 import Discord = require('discord.js');
-import { MessageHandler } from './message-handlers/message-handler';
+import { MessageHandler } from './handlers/message-handler';
+import { IOC } from './ioc';
+import { TYPES } from './types';
 
 export class Funbot {
   private discordClient: Discord.Client;
   private messageHandler: MessageHandler;
 
   constructor() {
+    const ioc = new IOC();
     this.discordClient = new Discord.Client();
-    this.messageHandler = new MessageHandler();
+    this.messageHandler = ioc.get<MessageHandler>(TYPES.MessageHandler);
 
     this.setupDiscordClient();
   }
 
   private setupDiscordClient() {
-    console.log('token: ' + process.env.DISCORD_TOKEN);
     this.discordClient.login(process.env.DISCORD_TOKEN);
 
     this.discordClient.on('ready', () => {

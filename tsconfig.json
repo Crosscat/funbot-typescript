@@ -1,12 +1,18 @@
 {
   "compilerOptions": {
-      "allowJs": true,
-      "experimentalDecorators": true,
-      "outDir": "./built",
-      "resolveJsonModule": true,
-      "target": "es5",
+    "allowJs": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "lib": ["es6", "dom"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "outDir": "./built",
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "target": "es6",
+    "types": ["mocha"],
   },
   "include": [
-      "./src/**/*"
+    "./src/**/*"
   ]
 }

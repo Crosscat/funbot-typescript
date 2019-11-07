@@ -1,12 +1,14 @@
+import { inject, injectable } from "inversify";
+
 import { Message } from "../interfaces/message.interface";
 import { TalkHandler } from "./talk-handler";
+import { TYPES } from "../types";
 
-export class MessageHandler {
-  private talkHandler: TalkHandler;
-
-  constructor() {
-    this.talkHandler = new TalkHandler();
-  }
+@injectable()
+export class MessageHandler implements MessageHandler {
+  constructor(
+    @inject(TYPES.TalkHandler) private talkHandler: TalkHandler,
+  ) { }
 
   public async handleMessage(message: string): Promise<string> {
     if (!this.isValidMessage(message)) return;
