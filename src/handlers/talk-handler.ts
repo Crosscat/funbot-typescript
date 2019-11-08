@@ -13,7 +13,7 @@ export class TalkHandler {
   public async handleMessage(message: string): Promise<string> {
     const keywords = this.getKeywords(message);
     
-    return 'oof';
+    return keywords.primary.word;
   }
 
   public getKeywords(message: string) {

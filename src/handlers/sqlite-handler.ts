@@ -15,11 +15,32 @@ export class SqLiteHandler implements DatabaseHandler {
     this.db.close();
   }
   
-  public getInfos(words: string[]): WordInfo[] {
-    return [{}] as WordInfo[];
+  public async getInfos(words: string[]): Promise<WordInfo[]> {
+    const query = `select * from words where word in (${words.map((word) => `'${word}'`).join(', ')}) and frequency > 0`
+
+    let infos = [];
+
+    await new Promise((resolve, reject) => {
+      this.db.all(query, [], (err, rows) => {
+        console.log('rows: ' + rows);
+        infos = rows.map((row) => this.mapWordInfo(row));
+      });
+    });
+
+    return infos;
   }
 
-  public getInfo(word: string): WordInfo {
-    return {} as WordInfo;
+  public getInfo(word: string): Promise<WordInfo> {
+    return null;
   }
+
+  mapWordInfo = (row: any): WordInfo => {
+    return {
+      id: row.ID,
+      word: row.Word,
+      frequency: row.Frequency,
+      endFrequency: row.EndFrequency,
+      startFrequency: row.StartFrequency,
+    };
+  };
 }

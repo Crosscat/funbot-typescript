@@ -9,6 +9,6 @@ export interface WordInfo {
 export interface DatabaseHandler {
   connect(path: string): void;
   disconnect(): void;
-  getInfo(word: string): WordInfo; 
-  getInfos(words: string[]): WordInfo[]; 
+  getInfo(word: string): Promise<WordInfo>; 
+  getInfos(words: string[]): Promise<WordInfo[]>; 
 }

@@ -28,9 +28,10 @@ export class MessageHandler {
   }
 
   private parseMessage(message: string): Message {
+    const prefix = message.split(' ')[0].substring(1).toLowerCase();
     return { 
-      prefix: message.split(' ')[0].substring(1).toLowerCase(),
-      message: message.split(' ')[1],
+      prefix: prefix,
+      message: message.substring(prefix.length + 1).trim(),
     };
   }
 }
