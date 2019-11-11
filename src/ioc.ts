@@ -1,16 +1,20 @@
 import 'reflect-metadata';
 
-import { Container } from "inversify";
+import { Database } from 'sqlite3';
+import { Container, decorate, injectable } from "inversify";
+
 import { TYPES } from "./types";
-import { DatabaseHandler } from "./interfaces/data.interfaces";
+import { MessageHandler } from "./handlers/message-handler";
 import { SqLiteHandler } from "./handlers/sqlite-handler";
 import { TalkHandler } from "./handlers/talk-handler";
-import { MessageHandler } from "./handlers/message-handler";
+import { DatabaseHandler } from './interfaces/data.interfaces';
 
 export class IOC extends Container {
   public constructor() {
     super();
+    decorate(injectable(), Database);
 
+    this.bind<Database>(TYPES.Database).toConstantValue(new Database(':memory:'));
     this.bind<DatabaseHandler>(TYPES.DatabaseHandler).to(SqLiteHandler);
     this.bind<MessageHandler>(TYPES.MessageHandler).to(MessageHandler);
     this.bind<TalkHandler>(TYPES.TalkHandler).to(TalkHandler);

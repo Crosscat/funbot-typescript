@@ -11,13 +11,14 @@ export class TalkHandler {
   }
 
   public async handleMessage(message: string): Promise<string> {
-    const keywords = this.getKeywords(message);
+    const keywords = await this.getKeywords(message);
     
-    return keywords.primary.word;
+    return keywords?.primary.word;
   }
 
-  public getKeywords(message: string) {
-    const infos = this.database.getInfos(message.split(' '));
+  public async getKeywords(message: string) {
+    const infos = await this.database.getInfos(message.split(' '));
+    if (!infos.length) return null;
     
     const primaryWord = infos.reduce((a: WordInfo, b: WordInfo) => a.frequency < b.frequency && a.frequency > 0 ? a : b);
 

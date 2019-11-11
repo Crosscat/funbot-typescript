@@ -6,9 +6,16 @@ export interface WordInfo {
   endFrequency: number;
 }
 
+export interface IdInfo {
+  id: number;
+  followingIds: number[];
+  trailingIds: number[];
+}
+
 export interface DatabaseHandler {
   connect(path: string): void;
   disconnect(): void;
-  getInfo(word: string): Promise<WordInfo>; 
-  getInfos(words: string[]): Promise<WordInfo[]>; 
+  getInfos(words: string[]): Promise<WordInfo[]>;
+  updateWords(words: string[]): Promise<void>;
+  exec(sql: string): Promise<void>;
 }
