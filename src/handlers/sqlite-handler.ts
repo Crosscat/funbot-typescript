@@ -30,6 +30,18 @@ export class SqLiteHandler implements DatabaseHandler {
     return words.map((word) => result.find((row) => row.word === word));
   }
 
+  public async getIdInfos(words: WordInfo[]): Promise<IdInfo[]> {
+    const query = `Select * From IDs Where WordID in (${words.map((word) => `${word.id}`).join(', ')})`;
+
+    let result = await new Promise<IdInfo[]>((resolve) => {
+      this.db.all(query, [], (_, rows) =>
+        resolve(rows.map((row) => this.mapIdInfo(row)))
+      );
+    });
+
+    return result;
+  }
+
   public async updateWords(words: string[]): Promise<void> {
     let wordInfos = await this.getInfos(words);
     wordInfos = await Promise.all(wordInfos.map(async (word, index) =>
@@ -82,7 +94,7 @@ export class SqLiteHandler implements DatabaseHandler {
     return data[0];
   }
 
-  private async updateWord(wordInfo: WordInfo): Promise<WordInfo> {
+  private async updateWord(wordInfo: WordInfo): Promise<void> {
     if (wordInfo.id === 0) {
       const newWord = await this.insertWord(wordInfo.word);
       wordInfo.id = newWord.id;
@@ -91,7 +103,6 @@ export class SqLiteHandler implements DatabaseHandler {
     const query = `Update Words Set Frequency = ${wordInfo.frequency}, EndFrequency = ${wordInfo.endFrequency}, StartFrequency = ${wordInfo.startFrequency} Where ID = ${wordInfo.id}`;
 
     await this.exec(query);
-    return wordInfo;
   }
 
   private async insertId(idInfo: IdInfo): Promise<void> {
@@ -135,6 +146,22 @@ export class SqLiteHandler implements DatabaseHandler {
       frequency: row.Frequency,
       endFrequency: row.EndFrequency,
       startFrequency: row.StartFrequency,
+    };
+  };
+
+  mapIdInfo = (row: any): IdInfo => {
+    return {
+      id: row.WordID,
+      trailingIds: [
+        row.TrailingWordID1,
+        row.TrailingWordID2,
+        row.TrailingWordID3,
+      ],
+      followingIds: [
+        row.FollowingWordID1,
+        row.FollowingWordID2,
+        row.FollowingWordID3,
+      ],
     };
   };
 }

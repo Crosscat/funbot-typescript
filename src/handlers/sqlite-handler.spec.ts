@@ -47,7 +47,23 @@ describe('sql-lite handler', () => {
     }]);
   });
 
+  it('should track id order', async () => {
+    const words = 'this is a fairly long id test'.split(' ');
+    await handler.updateWords(words);
+    const infos = await handler.getInfos(words);
+    const idInfos = await handler.getIdInfos(infos);
+
+    expect(idInfos).to.deep.equal([
+      { id: 1, trailingIds: [ 0, 0, 0 ], followingIds: [ 2, 3, 4 ] },
+      { id: 2, trailingIds: [ 0, 0, 1 ], followingIds: [ 3, 4, 5 ] },
+      { id: 3, trailingIds: [ 0, 1, 2 ], followingIds: [ 4, 5, 6 ] },
+      { id: 4, trailingIds: [ 1, 2, 3 ], followingIds: [ 5, 6, 0 ] },
+      { id: 5, trailingIds: [ 2, 3, 4 ], followingIds: [ 6, 0, 0 ] },
+      { id: 6, trailingIds: [ 3, 4, 5 ], followingIds: [ 0, 0, 0 ] },
+    ]);
+  });
+
   afterEach(() => {
     handler.disconnect();
-  })
+  });
 });

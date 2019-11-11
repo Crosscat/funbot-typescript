@@ -16,6 +16,7 @@ export interface DatabaseHandler {
   connect(path: string): void;
   disconnect(): void;
   getInfos(words: string[]): Promise<WordInfo[]>;
+  getIdInfos(words: WordInfo[]): Promise<IdInfo[]>;
   updateWords(words: string[]): Promise<void>;
   exec(sql: string): Promise<void>;
 }
