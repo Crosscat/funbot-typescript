@@ -57,11 +57,52 @@ describe('sql-lite handler', () => {
       { id: 1, trailingIds: [ 0, 0, 0 ], followingIds: [ 2, 3, 4 ] },
       { id: 2, trailingIds: [ 0, 0, 1 ], followingIds: [ 3, 4, 5 ] },
       { id: 3, trailingIds: [ 0, 1, 2 ], followingIds: [ 4, 5, 6 ] },
-      { id: 4, trailingIds: [ 1, 2, 3 ], followingIds: [ 5, 6, 0 ] },
-      { id: 5, trailingIds: [ 2, 3, 4 ], followingIds: [ 6, 0, 0 ] },
-      { id: 6, trailingIds: [ 3, 4, 5 ], followingIds: [ 0, 0, 0 ] },
+      { id: 4, trailingIds: [ 1, 2, 3 ], followingIds: [ 5, 6, 7 ] },
+      { id: 5, trailingIds: [ 2, 3, 4 ], followingIds: [ 6, 7, 0 ] },
+      { id: 6, trailingIds: [ 3, 4, 5 ], followingIds: [ 7, 0, 0 ] },
+      { id: 7, trailingIds: [ 4, 5, 6 ], followingIds: [ 0, 0, 0 ] },
     ]);
   });
+
+  it('should get next and previous word', async () => {
+    const words = 'this is a test'.split(' ');
+    await handler.updateWords(words);
+    const infos = await handler.getInfos(['is', 'a']);
+    
+    const nextWord = await handler.getNextWord(infos[0], infos[1], false);
+    expect(nextWord.word).to.equal('test');
+    
+    const previousWord = await handler.getNextWord(infos[1], infos[0], true);
+    expect(previousWord.word).to.equal('this');
+  });
+
+  it('should return empty if no next word', async () => {
+    const words = 'this test'.split(' ');
+    await handler.updateWords(words);
+    const infos = await handler.getInfos(words);
+
+    const nextWord = await handler.getNextWord(infos[0], infos[1], false);
+    expect(nextWord).to.equal(null);
+  });
+
+  it('should return empty if unable to match following word', async () => {
+    const words = 'this is a test'.split(' ');
+    await handler.updateWords(words);
+    await handler.updateWords(['not']);
+    const infos = await handler.getInfos(['is', 'not']);
+
+    const nextWord = await handler.getNextWord(infos[0], infos[1], false);
+    expect(nextWord).to.equal(null);
+  });
+
+  it('should get next word if no following word', async () => {
+    const words = 'this test'.split(' ');
+    await handler.updateWords(words);
+    const infos = await handler.getInfos(['this']);
+
+    const nextWord = await handler.getNextWord(infos[0], null, false);
+    expect(nextWord.word).to.equal('test');
+  })
 
   afterEach(() => {
     handler.disconnect();

@@ -31,7 +31,7 @@ export class SqLiteHandler implements DatabaseHandler {
   }
 
   public async getIdInfos(words: WordInfo[]): Promise<IdInfo[]> {
-    const query = `Select * From IDs Where WordID in (${words.map((word) => `${word.id}`).join(', ')})`;
+    const query = `Select * From IDs Where WordID in (${words.map((word) => `${word.id}`).join(', ')}) Order By WordID Asc`;
 
     let result = await new Promise<IdInfo[]>((resolve) => {
       this.db.all(query, [], (_, rows) =>
@@ -61,7 +61,7 @@ export class SqLiteHandler implements DatabaseHandler {
 
       for (let i = -3; i <= 3; i++) {
         const offset = index + i;
-        let id = offset >= 0 && offset < wordInfos.length - 1
+        let id = offset >= 0 && offset < wordInfos.length
           ? wordInfos[offset].id
           : 0;
 
@@ -82,6 +82,36 @@ export class SqLiteHandler implements DatabaseHandler {
     await new Promise<void>((resolve) => {
       this.db.exec(sql, () => resolve());
     })
+  }
+
+  public async getNextWord(baseWord: WordInfo, followingWord: WordInfo, isBackwards: boolean): Promise<WordInfo> {
+    let infos = await this.getIdInfos([baseWord]);
+    if (followingWord != null) {
+      infos = infos.filter((x) => isBackwards ? followingWord.id === x.trailingIds[2] : followingWord.id === x.followingIds[0]);
+    }
+    if (!infos.length) {
+      return null;
+    }
+    const randomInfo = infos[Math.floor(Math.random() * infos.length)];
+    
+    const nextId = followingWord != null ? (isBackwards ? randomInfo.trailingIds[1] : randomInfo.followingIds[1])
+                                         : (isBackwards ? randomInfo.trailingIds[2] : randomInfo.followingIds[0]);
+    if (nextId === 0) {
+      return null;
+    }
+    return await this.getWordInfoFromId(nextId);
+  }
+
+  private async getWordInfoFromId(id: number): Promise<WordInfo> {
+    const query = `Select * From Words Where ID = ${id}`;
+
+    let result = await new Promise<WordInfo[]>((resolve) => {
+      this.db.all(query, [], (_, rows) =>
+        resolve(rows == null ? [] : rows.map((row) => this.mapWordInfo(row)))
+      );
+    });
+
+    return result[0];
   }
 
   private async insertWord(word: string): Promise<WordInfo> {

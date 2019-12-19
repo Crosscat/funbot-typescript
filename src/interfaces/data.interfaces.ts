@@ -15,6 +15,7 @@ export interface IdInfo {
 export interface DatabaseHandler {
   connect(path: string): void;
   disconnect(): void;
+  getNextWord(baseWord: WordInfo, followingWord: WordInfo, isBackwards: boolean): Promise<WordInfo>;
   getInfos(words: string[]): Promise<WordInfo[]>;
   getIdInfos(words: WordInfo[]): Promise<IdInfo[]>;
   updateWords(words: string[]): Promise<void>;
