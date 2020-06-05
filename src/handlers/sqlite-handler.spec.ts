@@ -85,6 +85,15 @@ describe('sql-lite handler', () => {
     expect(nextWord).to.equal(null);
   });
 
+  it('should return empty if no previous word (single word)', async () => {
+    const words = ['test'];
+    await handler.updateWords(words);
+    const infos = await handler.getInfos(words);
+
+    const prevWord = await handler.getNextWord(null, infos[0], true);
+    expect(prevWord).to.equal(null);
+  })
+
   it('should return empty if unable to match following word', async () => {
     const words = 'this is a test'.split(' ');
     await handler.updateWords(words);

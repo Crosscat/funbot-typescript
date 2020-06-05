@@ -35,43 +35,55 @@ describe('Talk Handler', () => {
 
     it('should generate correct message', async () => { // holy cow this test
       const mockInfo: WordInfo = { word: '', id: 1, frequency: 1, startFrequency: 0, endFrequency: 0 };
-      const thisInfo: WordInfo = { ...mockInfo, word: 'this' };
-      const isInfo: WordInfo = { ...mockInfo, word: 'is' };
-      const aInfo: WordInfo = { ...mockInfo, word: 'a' };
-      const messageInfo: WordInfo = { ...mockInfo, word: 'message' };
+      const a: WordInfo = { ...mockInfo, word: 'a' };
+      const b: WordInfo = { ...mockInfo, word: 'b' };
+      const c: WordInfo = { ...mockInfo, word: 'c' };
+      const d: WordInfo = { ...mockInfo, word: 'd' };
 
-      const infos = [thisInfo, isInfo, aInfo, messageInfo];
-      for (let i = 0; i < 4; i++) {
-        if (i < 3) {
-          database.getNextWord(Arg.is(arg => _.isEqual(arg, infos[i])), null, false).returns(Promise.resolve(infos[i+1])); // get secondary keyword
-        } else {
-          database.getNextWord(Arg.is(arg => _.isEqual(arg, infos[i])), null, false).returns(Promise.resolve(null)); // get secondary keyword
-          database.getNextWord(null, Arg.is(arg => _.isEqual(arg, infos[i])), true).returns(Promise.resolve(infos[i-1])); // get secondary keyword
-        }
+      // get secondary keywords
+      nextWordMock(a, null, false, b);
+      nextWordMock(b, null, false, c);
+      nextWordMock(c, null, false, d);
+      nextWordMock(d, null, false, null);
+      nextWordMock(a, null, true, null);
+      nextWordMock(b, null, true, a);
+      nextWordMock(c, null, true, b);
+      nextWordMock(d, null, true, c);
 
-        if (i < 2) {
-          database.getNextWord(Arg.is(arg => _.isEqual(arg, infos[i])), Arg.is(arg => _.isEqual(arg, infos[i+1])), false).returns(Promise.resolve(infos[i+2])); // get subsequent word
-        } else {
-          database.getNextWord(Arg.is(arg => _.isEqual(arg, infos[i])), Arg.is(arg => _.isEqual(arg, infos[i+1])), false).returns(Promise.resolve(null)); // get subsequent word
-        }
-
-        if (i > 1) {
-          database.getNextWord(Arg.is(arg => _.isEqual(arg, infos[i])), Arg.is(arg => _.isEqual(arg, infos[i-1])), true).returns(Promise.resolve(infos[i-2])); // get previous word
-        } else {
-          database.getNextWord(Arg.is(arg => _.isEqual(arg, infos[i])), Arg.is(arg => _.isEqual(arg, infos[i-1])), true).returns(null); // get previous word
-          database.getNextWord(Arg.is(arg => _.isEqual(arg, infos[i])), null, true).returns(Promise.resolve(null));
-        }
-      }
-
-      database.getInfos(Arg.is(arg => _.isEqual(arg, ['this']))).returns(Promise.resolve([thisInfo]));
-      database.getInfos(Arg.is(arg => _.isEqual(arg, ['is']))).returns(Promise.resolve([isInfo]));
-      database.getInfos(Arg.is(arg => _.isEqual(arg, ['a']))).returns(Promise.resolve([aInfo]));
-      database.getInfos(Arg.is(arg => _.isEqual(arg, ['message']))).returns(Promise.resolve([messageInfo]));
+      // subsequent words
+      nextWordMock(a, b, false, c);
+      nextWordMock(b, c, false, d);
+      nextWordMock(c, d, false, null);
       
-      await expect(handler.handleMessage('this')).to.eventually.equal('this is a message');
-      await expect(handler.handleMessage('is')).to.eventually.equal('this is a message');
-      await expect(handler.handleMessage('a')).to.eventually.equal('this is a message');
-      await expect(handler.handleMessage('message')).to.eventually.equal('this is a message');
+      nextWordMock(a, b, true, null);
+      nextWordMock(b, c, true, a);
+      nextWordMock(c, d, true, b);
+
+      nextWordMock(b, a, false, c);
+      nextWordMock(c, b, false, d);
+      nextWordMock(d, c, false, null);
+      
+      nextWordMock(b, a, true, null);
+      nextWordMock(c, b, true, a);
+      nextWordMock(d, c, true, b);
+
+      database.getInfos(Arg.is(arg => _.isEqual(arg, ['a']))).returns(Promise.resolve([a]));
+      database.getInfos(Arg.is(arg => _.isEqual(arg, ['b']))).returns(Promise.resolve([b]));
+      database.getInfos(Arg.is(arg => _.isEqual(arg, ['c']))).returns(Promise.resolve([c]));
+      database.getInfos(Arg.is(arg => _.isEqual(arg, ['d']))).returns(Promise.resolve([d]));
+      
+      await expect(handler.handleMessage('a')).to.eventually.equal('a b c d');
+      await expect(handler.handleMessage('b')).to.eventually.equal('a b c d');
+      await expect(handler.handleMessage('c')).to.eventually.equal('a b c d');
+      await expect(handler.handleMessage('d')).to.eventually.equal('a b c d');
     });
+    
+    const nextWordMock = function(keyword: WordInfo, secondary: WordInfo, backwards: boolean, result: WordInfo) {
+      database.getNextWord(
+        Arg.is(arg => _.isEqual(arg, keyword)),
+        Arg.is(arg => _.isEqual(arg, secondary)),
+        backwards,
+      ).returns(Promise.resolve(result));
+    }
   });
 });

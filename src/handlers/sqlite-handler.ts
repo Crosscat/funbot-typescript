@@ -9,7 +9,7 @@ export class SqLiteHandler implements DatabaseHandler {
   constructor(
     @inject(TYPES.Database) private db: Database,
   ) { }
-  
+
   public connect(path: string): void {
     this.db = new Database(path);
   }
@@ -17,7 +17,7 @@ export class SqLiteHandler implements DatabaseHandler {
   public disconnect(): void {
     this.db.close();
   }
-  
+
   public async getInfos(words: string[]): Promise<WordInfo[]> {
     const query = `Select * From Words Where Word In (${words.map((word) => `'${word}'`).join(', ')})`;
 
@@ -79,12 +79,15 @@ export class SqLiteHandler implements DatabaseHandler {
   }
 
   public async exec(sql: string): Promise<void> {
-    await new Promise<void>((resolve) => {
-      this.db.exec(sql, () => resolve());
-    })
+    await new Promise<void>((resolve) =>
+      this.db.exec(sql, () => resolve())
+    );
   }
 
   public async getNextWord(baseWord: WordInfo, followingWord: WordInfo, isBackwards: boolean): Promise<WordInfo> {
+    if (baseWord == null) {
+      return null;
+    }
     let infos = await this.getIdInfos([baseWord]);
     if (followingWord != null) {
       infos = infos.filter((x) => isBackwards ? followingWord.id === x.trailingIds[2] : followingWord.id === x.followingIds[0]);
@@ -96,6 +99,7 @@ export class SqLiteHandler implements DatabaseHandler {
     
     const nextId = followingWord != null ? (isBackwards ? randomInfo.trailingIds[1] : randomInfo.followingIds[1])
                                          : (isBackwards ? randomInfo.trailingIds[2] : randomInfo.followingIds[0]);
+
     if (nextId === 0) {
       return null;
     }

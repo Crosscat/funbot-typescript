@@ -15,7 +15,7 @@ export class IOC extends Container {
     decorate(injectable(), Database);
 
     this.bind<Database>(TYPES.Database).toConstantValue(new Database(':memory:'));
-    this.bind<DatabaseHandler>(TYPES.DatabaseHandler).to(SqLiteHandler);
+    this.bind<DatabaseHandler>(TYPES.DatabaseHandler).to(SqLiteHandler).inSingletonScope();
     this.bind<MessageHandler>(TYPES.MessageHandler).to(MessageHandler);
     this.bind<TalkHandler>(TYPES.TalkHandler).to(TalkHandler);
   }

@@ -3,15 +3,23 @@ import { inject, injectable } from "inversify";
 import { Message } from "../interfaces/message.interface";
 import { TalkHandler } from "./talk-handler";
 import { TYPES } from "../types";
+import { DatabaseHandler } from "../interfaces/data.interfaces";
 
 @injectable()
 export class MessageHandler {
   constructor(
     @inject(TYPES.TalkHandler) private talkHandler: TalkHandler,
+    @inject(TYPES.DatabaseHandler) private database: DatabaseHandler,
   ) { }
 
   public async handleMessage(message: string): Promise<string> {
-    if (!this.isValidMessage(message)) return;
+    message = message.replace(/\s+/g, ' ');
+
+    if (!this.isValidAction(message)) {
+      const words = message.split(' ');
+      this.database.updateWords(words);
+      return;
+    }
 
     const parsedMessage = this.parseMessage(message);
 
@@ -19,11 +27,11 @@ export class MessageHandler {
       case 'talk':
         return this.talkHandler.handleMessage(parsedMessage.message);
       default:
-        return null;
+        return;
     }
   }
 
-  private isValidMessage(message: string): boolean {
+  private isValidAction(message: string): boolean {
     return message.startsWith('!');
   }
 
